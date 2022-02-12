@@ -16,6 +16,11 @@ import collections
 import math
 
 
+def printTruncated(number):
+    number = '%.1f'%(number)
+    print(number)
+
+# Returns measurements of a single thing in an orderedDict (ordered by time descending)
 def getMeasurements(singleTimeSeries):
     dataDict = {}
 
@@ -32,8 +37,25 @@ def getMeasurements(singleTimeSeries):
         dataDict[time] = float(value)
     
     orderedDict = collections.OrderedDict(sorted(dataDict.items(), reverse = True))
-    return orderedDict
 
+    orderedList = []
+
+    # Make a list
+    for time, value in orderedDict.items():
+#        print (time + " " + str(value))
+
+        # TODO: If there are missing values in between, time is calculated incorrectly. How to fix?
+        # Skip Nan values
+        if math.isnan(value):
+            continue
+
+        orderedList.append(value)
+
+    return orderedDict, orderedList
+
+
+# --------------------------------
+# Setup
 
 url = "http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::timevaluepair&place=espoo&timestep=10&"
 
@@ -44,37 +66,46 @@ xmlData = minidom.parse(file)
 
 allTimeSeries = xmlData.getElementsByTagName('wml2:MeasurementTimeseries')
 
+# --------------------------------
+# Getting data
+
 #print(allTimeSeries)
 
+# Loops timeseries. A timeseries contains multiple measurements of a single thing, like temperature.
 for singleTimeSeries in allTimeSeries:
     id = singleTimeSeries.getAttribute("gml:id")
     print(id)
 
+    # Temperature
     if id.endswith("t2m"):
-        temperatureDict = getMeasurements(singleTimeSeries)
-#        print(temperatureDict)
-
-i = 0
-temperatureList = []
-
-for time, temperature in temperatureDict.items():
-    print (time + " " + str(temperature))
-
-    # Skip Nan values
-    if math.isnan(temperature):
-        continue
-
-    temperatureList.append(temperature)
-    i = i + 1
+        temperatureOrderedDict, temperatureList = getMeasurements(singleTimeSeries)
+#        print(temperatureOrderedDict)
+    elif id.endswith("ws_10min"):
+        windspeedOrderedDict, windspeedList = getMeasurements(singleTimeSeries)
+        print("HERE:")
+        print(windspeedOrderedDict)
     
 
 print(temperatureList)
 
+print("TEMPERATURE")
+
 print("30 min change: ")
-print(temperatureList[0] - temperatureList[3])
+printTruncated(temperatureList[0] - temperatureList[3])
 
 print("2 hour change: ")
-print(temperatureList[0] - temperatureList[12])
+printTruncated(temperatureList[0] - temperatureList[12])
 
 print("6 hour change: ")
-print(temperatureList[0] - temperatureList[36])
+printTruncated(temperatureList[0] - temperatureList[36])
+
+print("WIND SPEED")
+
+print("30 min change: ")
+printTruncated(windspeedList[0] - windspeedList[3])
+
+print("2 hour change: ")
+printTruncated(windspeedList[0] - windspeedList[12])
+
+print("6 hour change: ")
+printTruncated(windspeedList[0] - windspeedList[36])
