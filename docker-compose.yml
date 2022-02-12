@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+
+  python:
+    build: .
+    image: python:3
+    container_name: weatherer
+    volumes:
+      - ./app:/usr/src/app
+      
+    # Infinite loop, to keep it alive, for debugging
+    command: bash -c "while true; do echo 'sleeping 60...' && sleep 60; done"
