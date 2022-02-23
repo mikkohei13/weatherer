@@ -1,0 +1,3 @@
+
+botToken = ""
+botChatID = "-100"
